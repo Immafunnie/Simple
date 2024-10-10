@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple War Game</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background-color: #cce7ff;
+        }
+        #gameArea {
+            position: relative;
+            width: 800px;
+            height: 600px;
+            background: #4d94ff;
+            margin: auto;
+            border: 2px solid #000;
+            overflow: hidden;
+        }
+        #soldier {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            background: green;
+            bottom: 10px;
+            left: 375px;
+        }
+        .bullet {
+            position: absolute;
+            width: 5px;
+            height: 15px;
+            background: red;
+        }
+        .enemy {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            background: orange;
+            top: 0;
+            left: 0;
+        }
+    </style>
+</head>
+<body>
+    <div id="gameArea">
+        <div id="soldier"></div>
+        <div class="enemy"></div>
+    </div>
+    <script>
+        const soldier = document.getElementById('soldier');
+        const gameArea = document.getElementById('gameArea');
+        const enemy = document.querySelector('.enemy');
+        let score = 0;
+        let isGameOver = false;
+
+        document.addEventListener('keydown', (e) => {
+            if (!isGameOver) {
+                if (e.key === 'ArrowLeft') moveSoldier(-20);
+                if (e.key === 'ArrowRight') moveSoldier(20);
+                if (e.key === ' ') shootBullet();
+            }
+        });
+
+        function moveSoldier(direction) {
+            const soldierPosition = soldier.offsetLeft;
+            const newSoldierPosition = soldierPosition + direction;
+            if (newSoldierPosition >= 0 && newSoldierPosition <= 750) {
+                soldier.style.left = newSoldierPosition + 'px';
+            }
+        }
+
+        function shootBullet() {
+            const bullet = document.createElement('div');
+            bullet.classList.add('bullet');
+            bullet.style.left = soldier.offsetLeft + 22.5 + 'px'; // Center bullet
+            bullet.style.bottom = '60px';
+            gameArea.appendChild(bullet);
+            moveBullet(bullet);
+        }
+
+        function moveBullet(bullet) {
+            const bulletInterval = setInterval(() => {
+                if (isGameOver) {
+                    clearInterval(bulletInterval);
+                    return;
+                }
+                const bulletPosition = bullet.offsetTop;
+                if (bulletPosition <= 0) {
+                    bullet.remove();
+                    clearInterval(bulletInterval);
+                } else {
+                    bullet.style.top = bulletPosition - 5 + 'px';
+                    checkCollision(bullet, clearInterval);
+                }
+            }, 20);
+        }
+
+        function checkCollision(bullet, clearInterval) {
+            const bulletRect = bullet.getBoundingClientRect();
+            const enemyRect = enemy.getBoundingClientRect();
+
+            if (
+                bulletRect.x < enemyRect.x + enemyRect.width &&
+                bulletRect.x + bulletRect.width > enemyRect.x &&
+                bulletRect.y < enemyRect.y + enemyRect.height &&
+                bulletRect.y + bulletRect.height > enemyRect.y
+            ) {
+                score++;
+                alert('Hit! Score: ' + score);
+                bullet.remove();
+                resetEnemy();
+                clearInterval();
+            }
+        }
+
+        function resetEnemy() {
+            enemy.style.left = Math.random() * 750 + 'px';
+            enemy.style.top = Math.random() * 500 + 'px'; // Random position
+        }
+
+        function endGame() {
+            isGameOver = true;
+            alert('Game Over! Final Score: ' + score);
+        }
+
+        // For demo purposes, let's end the game after 30 seconds
+        setTimeout(endGame, 30000);
+    </script>
+</body>
+</html>
